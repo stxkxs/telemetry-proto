@@ -1,0 +1,37 @@
+spring:
+  application:
+    name: telemetry-proto
+  threads:
+    virtual:
+      enabled: true
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, info, prometheus
+  metrics:
+    distribution:
+      percentiles-histogram:
+        http.server.requests: true
+      minimum-expected-value:
+        http.server.requests: 5ms
+      maximum-expected-value:
+        http.server.requests: 1000ms
+    tags:
+      region: ${AWS_REGION:local}
+      infra: ${INFRA:local}
+  tracing:
+    sampling:
+      probability: 1.0
+  otlp:
+    tracing:
+      endpoint: ${OTLP_HTTP_ENDPOINT:http://localhost:4318}/v1/traces
+    metrics:
+      export:
+        url: ${OTLP_HTTP_ENDPOINT:http://localhost:4318}/v1/metrics
+  zipkin:
+    tracing:
+      endpoint: ${OTLP_ZIPKIN_ENDPOINT:http://localhost:9411}/api/v2/spans
+logging:
+  pattern:
+    level: "%5p [${spring.application.name:},%X{traceId:-},%X{spanId:-}]"
